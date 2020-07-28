@@ -1,0 +1,16 @@
+{
+  "name": "melodya",
+  "version": "0.0.1",
+  "description": "a soviet radio into an aesthethically pleasing speaker",
+  "main": "index.js",
+  "dependencies": {
+    "execa": "^4.0.3",
+    "onoff": "^6.0.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "node index.js"
+  },
+  "author": "Gagik Amaryan",
+  "license": "ISC"
+}
