@@ -5,11 +5,17 @@
   "main": "index.js",
   "dependencies": {
     "execa": "^4.0.3",
-    "onoff": "^6.0.0"
+    "onoff": "^6.0.0",
+    "rpi-led-matrix": "^1.10.0",
+    "socket.io": "^2.3.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "tslint": "^6.1.3",
+    "typescript": "^3.9.7"
+  },
   "scripts": {
-    "test": "node index.js"
+    "set-gpio": "venv/bin/python scripts/configure_gpio.py",
+    "start": "venv/bin/python src/client.py & node src/index.js"
   },
   "author": "Gagik Amaryan",
   "license": "ISC"

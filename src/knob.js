@@ -6,7 +6,7 @@
 const Gpio = require('onoff').Gpio;
 
 class Knob {
-    constructor(gpio1, gpio2) {
+    constructor(gpio1, gpio2, ticksNeeded) {
         this.gpio = 
         this._buttonA = new Gpio(gpio1, 'in', 'both');
         this._buttonB = new Gpio(gpio2, 'in', 'both');
@@ -14,7 +14,7 @@ class Knob {
         this.b = 0 // GPIO 2 val
         this.v = 0 //value to increment/decrement
         this.ticks = 0;
-        this.needed = 3;
+        this.needed = 1;
 
         this._buttonB.watch((err, value) => {
             if (err) {
@@ -42,10 +42,10 @@ class Knob {
                 }
               }
           });
-          process.on('SIGINT', this.exit);
+          process.on('SIGINT', () => this.exit(this));
     }
-    exit() {
-      // this._buttonA.unexport();
+    exit(that) {
+      that._buttonA.unexport();
       process.exit();
     }
 }

@@ -45,7 +45,7 @@ function getInfo () {
 
 module.exports.changeBy = (delta, direction) => {
   let sign = direction > 0 ? '+' : '-'; 
-  return getDefaultDevice().then(dev => amixer('-q', 'sset', dev, ('3%' + sign)));
+  return getDefaultDevice().then(dev => amixer('-q', 'sset', dev, (delta + '%' + sign)));
 }
 
 exports.getVolume = function () {
@@ -61,5 +61,5 @@ module.exports.getMuted = function (cb) {
 }
 
 module.exports.setMuted = function (val, cb) {
-  return amixer('set', 'PCM', (val ? 'mute' : 'unmute')).then(() => undefined)
+  return getDefaultDevice().then(dev => amixer('set', dev, (val ? 'mute' : 'unmute'))).then(() => undefined)
 }
