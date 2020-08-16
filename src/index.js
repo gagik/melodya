@@ -2,19 +2,17 @@
 
 const Knob = require('./knob.js');
 const M = require('./melodya.js');
-// const Volume = require('./volume.js');
+
 const { Gpio } = require('onoff');
-const { basename } = require('path');
 const {
-    LedMatrix,
-    Font
+    LedMatrix
  } = require('rpi-led-matrix');
-const server = require('http').createServer();
-const io = require('socket.io')(server);
+
 const VolumeKnob = new Knob(19, 26);
 const button = new Gpio(16, 'in', 'both');
-const { exec } = require('child_process');
-// const font = new Font('5x8', './src/fonts/5x8.bdf');
+
+const server = require('http').createServer();
+const io = require('socket.io')(server);
 const font = new M.Font(5, 8);
 let temporaryScreen = -1;
 let tSD = -1;
@@ -22,15 +20,13 @@ let currentVolume = 35;
 let transitionVolume = currentVolume;
 let isMuted = false;
 let isVolumeProcess = false;
-const clearTempDisplay = () => {
-    matrix.clear().sync();
-}
 
-const matrix = new LedMatrix( {
+let matrix, UI, volume, volumeBar, volumeText;
+const _matrix = new LedMatrix( {
     ...LedMatrix.defaultMatrixOptions(),
     rows: 16,
     cols: 32,
-    pwmLsbNanoseconds: 500,
+    pwmLsbNanoseconds: 300,
     pwmBits: 1,
 }, {
     ...LedMatrix.defaultRuntimeOptions(),
@@ -39,19 +35,27 @@ const matrix = new LedMatrix( {
 
 
 const init = () => {
-    M.init(matrix, {
+    matrix = new M.Matrix(_matrix, {
         width: 31, height: 10,
         offsetX: 1, offsetY: 1
     });
-    matrix.afterSync((mat, dt, t) => {
-        M.Element.instances.forEach(element => {
-          element.render();
-        });
-      
-        setTimeout(() => matrix.sync(), 0);
-    });
-    const text = new M.Text('hello!', 0xFF0000, font);
-    matrix.sync();
+
+    UI = new M.Layer('ui', 10);
+    matrix.addLayer(UI);
+    volume = new M.Group('');
+
+    volume.index = new M.Text('', font, 0x000000, {y: 1, x: 3});
+    volume.bar = new M.Rectangle(0, 0, 0, 10, 0xFF0000);
+
+    UI.add(volume);
+    
+    volume.add(volume.index).add(volume.bar);
+
+    let image = new M.Image('src/assets/logo.gif', {x: 0, y: 0});
+
+    image.onload = () => {UI.add(image);}
+
+    matrix.render();
 }
 
 const visualizeVolume = () => {
@@ -63,7 +67,7 @@ const visualizeVolume = () => {
             clearInterval(temporaryScreen);
             temporaryScreen = -1;
             if(tSD === -1) {
-                tSD = setTimeout(clearTempDisplay, 2500);
+                tSD = setTimeout(volume.hide, 2500);
             }
         }
         else {
@@ -74,18 +78,12 @@ const visualizeVolume = () => {
             if(transitionVolume > currentVolume) transitionVolume--;
             else transitionVolume++;
         }
-        const progress = Math.round(transitionVolume/101*31);
-        if(progress === 0) {
-            matrix.clear().sync();
-            return;
+        let progress = Math.round(transitionVolume/100*31);
+        if(transitionVolume < 5) {
+            progress = 0;
         }
-        matrix.clear()
-        .fgColor(0xFF0000)
-        .fill(0, 0, progress, 10)
-        .font(font)
-        .fgColor(0x000000)
-        .drawText(transitionVolume.toString(), 3, 3)
-        .sync();
+        volume.bar.width = progress;
+        volume.index.text = transitionVolume.toString();
     }, 6);
 }
 
@@ -104,8 +102,13 @@ console.log("Running...");
 
 VolumeKnob.onchange = (delta) => {
     delta *= 5;
-    if(currentVolume + delta > 100 ||
-       currentVolume + delta < 0) { 
+    if(currentVolume + delta > 100) {
+        currentVolume = 100;
+        visualizeVolume()
+        return;
+    }
+    else if(currentVolume + delta < 0) { 
+        currentVolume = 0;
         visualizeVolume()
         return;
     }

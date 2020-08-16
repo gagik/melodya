@@ -51,20 +51,3 @@ class Knob {
 }
 
 module.exports = Knob;
-
-//Watch for hardware interrupt of switch 1
-
-//Watch for hardware interrupt of switch 2
-// button2.watch(function (err, value) {
-//   if (err) {
-//     throw err;
-//   }
-// 	b = value;
-
-// 	//only evaluate if a = 1
-// 	if (a == 1 && b == 1) {
-
-// 	} else if (a==1 && b==0) {
-// 	}
-// });
-

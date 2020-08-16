@@ -5,6 +5,7 @@
   "main": "index.js",
   "dependencies": {
     "execa": "^4.0.3",
+    "gifwrap": "^0.9.2",
     "onoff": "^6.0.0",
     "rpi-led-matrix": "^1.10.0",
     "socket.io": "^2.3.0"
@@ -14,7 +15,7 @@
     "typescript": "^3.9.7"
   },
   "scripts": {
-    "set-gpio": "venv/bin/python scripts/configure_gpio.py",
+    "set-gpio": "python3 scripts/configure_gpio.py",
     "start": "venv/bin/python src/client.py & node src/index.js"
   },
   "author": "Gagik Amaryan",
