@@ -41,6 +41,9 @@ const validate = (x, type) => {
         case 'function':
             if(typeof x != 'function') return true;
             break;
+        case 'bool':
+            if(typeof x != 'boolean') return true;
+            break;
         default:
             console.warn('Validation of unknown type');
             break;
@@ -65,7 +68,7 @@ class Group {
         return this;
     }
     remove(element) {
-        let index = this.elements.indexOf(this);
+        let index = this.elements.indexOf(element);
         if(index === -1) {
             console.warn('Removing a non-existent element');
             return;
@@ -104,6 +107,14 @@ class Element {
         this.render;
         Element.instances.push(this);
     }
+
+    on(eventName, callback) {
+        let eventProp = 'on' + eventName;
+        if(this.hasOwnProperty(eventProp)) {
+            this[eventProp] = callback;
+        }
+    }
+    
     hide() {
         this.hidden = true;
     }
@@ -185,13 +196,28 @@ class Rectangle extends Element {
 const { GifUtil } = require('gifwrap');
 class Image extends Element {
 
-    constructor(src, options) {
+    constructor(src, {loop, reverse, onfinish, onload, speed}, options) {
         super({...Element.defaults, ...options});
+
+        this.onfinish = onfinish;
+        this.onload = onload;
+
+        this.finished = false;
         this.loaded = false;
+
+        this.frameId = 0;
+        this.paused = false;
+        this.loop = validate(loop, 'bool') ? false : loop;
+        this.reverse = validate(reverse, 'bool') ? false : reverse;
+        this.speed = validate(speed, 'number') ? 20 : speed;
         this.frames = [];
         this.delta = 0;
         GifUtil.read(src).then((gif) => {this.setup(this, gif)});
     }
+
+    pause() {this.paused = true;}
+
+    play() {this.paused = false;}
 
     setup(image, gif) {
 
@@ -228,16 +254,30 @@ class Image extends Element {
 
     render() {
         if(!this.loaded) return;
-        this.delta++;
-        let frameId = Math.floor(this.delta/20);
+        if(!this.finished)
+        {
+            this.delta++;
+            this.frameId = Math.floor(this.delta/this.speed);
+        }
+        let lastFrame = this.frames.length - 1;
 
-        if(frameId > this.frames.length - 1) {
-            this.frames = this.frames.reverse();
-            this.delta = 0;
-            frameId = 0;
+        if(this.frameId > lastFrame) {
+            if(this.reverse === true) {
+                this.frames = this.frames.reverse();
+                this.delta = 0;
+                this.frameId = 1 % (lastFrame);
+            }
+            else if(this.loop === true) {
+                this.delta = 0;
+                this.frameId = 0;
+            } else {
+                this.finished = true;
+                if(!validate(this.onfinish, 'function')) this.onfinish();
+                this.frameId = lastFrame;
+            }
         }
         
-        let frame = this.frames[frameId];
+        let frame = this.frames[this.frameId];
 
         for(let color of Object.keys(frame)) {
             let hex = parseInt(color);

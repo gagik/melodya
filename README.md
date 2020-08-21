@@ -2,9 +2,18 @@
 
 This is the code for **Project Melodya**, where I am turning an old Soviet radio into a Spotify speaker with a LED matrix and webapp control.
 
-To do this, I am using a a Rasberry Pi, an [Adafruit 16x32 RGB LED matrix panel](https://www.adafruit.com/product/420), a couple of rotary encoders, a hacked JBL Go speaker connected through AUX, and, obviously, the radio itself.
+To do this, I am using a Rasberry Pi 4, an [Adafruit 16x32 RGB LED matrix panel](https://www.adafruit.com/product/420), a couple of rotary encoders, a hacked JBL Go speaker connected through AUX, and, obviously, the radio itself.
 
-I could have connected the old speaker in the radio to the Raspberry Pi itself but its age and form factor were not a great fit for the build.
+I could have connected the old speaker in the radio to the Raspberry Pi itself but its age and form factor were not a great fit for the build. 
+
+## Features 
+1. Bootup screen animation with sound.
+2. Volume adjustement with visualization.
+3. Custom GIF animation support.
+4. **IN PROCESS:** Fun visuals.
+5. **PLANNED:** Web interface for light and music control. 
+6. **PLANNED:** Cover art visualization with Spotify API. 
+7. **PLANNED:** A pong port.
 
 ## Setup
 Note: this project is **WIP**, the setup steps are prone to change and at the moment are for reference only.
@@ -13,7 +22,7 @@ Note: this project is **WIP**, the setup steps are prone to change and at the mo
 3. Install NodeJS dependencies with `npm install`.
 4. Start the service with `npm run start`.
 
-I ran into issues installing the `pyalsaaudio` dependency, this was fixed with `sudo apt-get install -y python3-dev libasound2-dev gcc g++ make`; all of these are necessary to compile the library from source.
+On DietPi OS running on Pi 4, I ran into issues installing the `pyalsaaudio` dependency, this was fixed with `sudo apt-get install -y python3-dev libasound2-dev gcc g++ make`; all of these are necessary to compile the library from source.
 
 ## Sound, NodeJS, and the LED Matrix
 Controlling volume of Raspberry Pi in NodeJS can be accomplished through a couple of ways. The simplest (and arguably most effective) way to just spawn a child process either running a Python script or a bash command like `amixer`. This seemed to work great on its own but for a very odd reason when using the LED matrix library access to amixer's speaker devices would disappear in the program scope. I thought this could be fixed by setting environment variables but the issue seems to occur when the LED matrix library is given root permissions. For those curious, I left a child process-based approach to sound control in `unused/volume_cmd.js`. 
